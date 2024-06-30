@@ -5,17 +5,21 @@ import { hoursClick } from "./hours-click.js"
 
 const hours = document.getElementById("hours")
 
-export function hoursLoad({ date }) {
+export function hoursLoad({ date, dailySchedules }) {
 
     hours.innerHTML = ""
+    
+    const unavailableHours = dailySchedules.map((schedule) => {
+        return dayjs.utc((schedule.when)).format("HH:mm")
+    })
 
     const opening = openingHours.map((hour) => {
         // Recupera somente a hora
         const [scheduleHour] = hour.split(":")
+       
+        // Adiciona a hora na data e vericar se está no passado e se já não esta agendado para outro cliente.
+        const isHourAvailable = (dayjs(date).add(scheduleHour, "hour").isAfter(dayjs())) && (!unavailableHours.includes(hour))
 
-        // Adiciona a hora na data e vericar se está no passado.
-        const isHourAvailable = dayjs(date).add(scheduleHour, "hour").isAfter(dayjs())
-        
         return {
             hour,
             isHourAvailable
@@ -23,7 +27,6 @@ export function hoursLoad({ date }) {
     })
 
     opening.forEach(({ hour, isHourAvailable }) => {
-        console.log(isHourAvailable)
         const li = document.createElement("li")
         li.classList.add("hour")
         li.classList.add(isHourAvailable ? "hour-available": "hour-unavailable")
